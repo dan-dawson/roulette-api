@@ -44,7 +44,7 @@ func tableStateWorker(tableReqCh chan TableRequest) {
 		case req := <-tableReqCh:
 			switch req.Cmd {
 			case AddBet:
-				fmt.Printf("bet received for %k\n", req.BetSlip.betNums)
+				fmt.Printf("bet received for %v\n", req.BetSlip.betNums)
 				participants = append(participants, req.BetSlip)
 			case NotifyParticipants:
 
@@ -55,7 +55,6 @@ func tableStateWorker(tableReqCh chan TableRequest) {
 						participant.Win = true
 						participant.userCh <- participant
 					} else {
-						fmt.Println("got here")
 						participant.userCh <- participant
 					}
 				}
