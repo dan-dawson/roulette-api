@@ -10,7 +10,7 @@ I plan to implement either a config file or the use of flags to configure certai
 - Port number default is `:8080`
 
 For now it is as simple as using `go run roulette.go`
-This will start the programme and you will see console messages stating the winning numbers of each game and also when a new bet is placed.
+This will start the programme, and you will see console messages stating the winning numbers of each game, when a new bet is placed and any errors with the request.
 
 # Placing a bet
 
@@ -26,19 +26,19 @@ A straight bet has 35:1 odds meaning the profit from a win would be £3500.
 
 # Supported bet types
 
-- `0`
-- `straight`
-- `row`
-- `split`
-- `street`
-- `corner`
-- `basket`
-- `doublestreet`
-- `column`
-- `dozen`
-- `colour`
-- `oddeven`
-- `highlow`
+- `0` 35:1
+- `straight` 35:1
+- `row` 17:1
+- `split` 17:1
+- `street` 11:1
+- `corner` 8:1
+- `basket` 8:1
+- `doublestreet` 5:1
+- `column` 2:1
+- `dozen` 2:1
+- `colour` 1:1
+- `oddeven` 1:1
+- `highlow` 1:1
 
 Please note:
-This programme currently only supports single bets.
+This programme currently only supports single bets per request.

@@ -28,10 +28,10 @@ func RequestRouter(w http.ResponseWriter, r *http.Request) {
 			BetSlip: betSlip,
 		}
 
+		// Wait for win/loss response from the table.
 		response := checkBetslip(userResponse)
 
 		fmt.Fprintln(w, response)
-
 	}
 }
 

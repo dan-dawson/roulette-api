@@ -5,11 +5,9 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"time"
 )
 
 type Betslip struct {
-	betID         int64
 	userCh        chan Betslip
 	betNums       map[int]struct{}
 	betType       string
@@ -18,11 +16,12 @@ type Betslip struct {
 	Win           bool
 }
 
+// BuildBetSlip will be used to generate the betslip used by the participants slice.
 func BuildBetSlip(userChan chan Betslip, r *http.Request) (Betslip, error) {
 	var err error
 	query := r.URL.Query()
 
-	numbers, err := buildBetNumbers(query)
+	numbers, err := parseBetNumbers(query)
 	if err != nil {
 		return Betslip{}, err
 	}
@@ -31,7 +30,7 @@ func BuildBetSlip(userChan chan Betslip, r *http.Request) (Betslip, error) {
 	if err != nil {
 		return Betslip{}, err
 	}
-	multiplier := buildBetMultiplier(betType)
+	multiplier := setBetMultiplier(betType)
 	if multiplier < 1 {
 		return Betslip{}, fmt.Errorf("multiplier set to 0")
 	}
@@ -41,7 +40,6 @@ func BuildBetSlip(userChan chan Betslip, r *http.Request) (Betslip, error) {
 	}
 
 	newBetSlip := Betslip{
-		betID:         time.Now().UnixNano(),
 		userCh:        userChan,
 		betNums:       numbers,
 		betType:       betType,
@@ -52,7 +50,7 @@ func BuildBetSlip(userChan chan Betslip, r *http.Request) (Betslip, error) {
 	return newBetSlip, nil
 }
 
-func buildBetNumbers(values url.Values) (map[int]struct{}, error) {
+func parseBetNumbers(values url.Values) (map[int]struct{}, error) {
 	numMap := make(map[int]struct{}, 0)
 
 	numbers, present := values["n"]
@@ -81,7 +79,7 @@ func parseBetType(values url.Values) (string, error) {
 	return betType[0], nil
 }
 
-func buildBetMultiplier(betType string) int {
+func setBetMultiplier(betType string) int {
 
 	switch betType {
 	case "0":

@@ -8,7 +8,7 @@ import (
 
 var (
 	participants        []Betslip
-	TableRequestChannel chan TableRequest
+	TableRequestChannel = make(chan TableRequest)
 	seed                rand.Source
 	winningNumber       int
 )
@@ -24,14 +24,15 @@ type TableRequest struct {
 	BetSlip Betslip
 }
 
+// TableStart will build required variables and start the stateWorker.
 func TableStart() {
 	participants = make([]Betslip, 0)
-	TableRequestChannel = make(chan TableRequest)
 	seed = rand.NewSource(time.Now().UnixNano())
 
 	tableStateWorker(TableRequestChannel)
 }
 
+// tableStateWorker will ensure all manipulation of the participants slice is done in a thread safe manner.
 func tableStateWorker(tableReqCh chan TableRequest) {
 
 	// This ticker will be used to give time for users to place bets. In the real world, the duration would be set via a config file or flag.
@@ -58,7 +59,7 @@ func tableStateWorker(tableReqCh chan TableRequest) {
 						participant.userCh <- participant
 					}
 				}
-				go clearParticiants()
+				go clearParticipants()
 
 				ticker.Reset(1 * time.Minute)
 			case ClearParticipants:
@@ -68,6 +69,7 @@ func tableStateWorker(tableReqCh chan TableRequest) {
 	}
 }
 
+// Generate a random winning number.
 func spinTheWheel() {
 
 	randomSeed := rand.New(seed)
@@ -79,7 +81,8 @@ func spinTheWheel() {
 	return
 }
 
-func clearParticiants() {
+// Clear the list of participants ready for the next game.
+func clearParticipants() {
 	TableRequestChannel <- TableRequest{
 		Cmd: ClearParticipants,
 	}
