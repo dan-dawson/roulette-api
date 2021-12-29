@@ -13,18 +13,29 @@ type Betslip struct {
 	userCh        chan Betslip
 	betNums       map[int]struct{}
 	betType       string
-	winMultiplier int
-	stake         int
-	win           bool
+	WinMultiplier int
+	Stake         int
+	Win           bool
 }
 
 func BuildBetSlip(userChan chan Betslip, r *http.Request) (Betslip, error) {
+	var err error
 	query := r.URL.Query()
-	numbers, err := buildBetNumbers(query)
-	betType, err := parseBetType(query)
-	multiplier := buildBetMultiplier(betType)
-	stake, err := parseStake(query)
 
+	numbers, err := buildBetNumbers(query)
+	if err != nil {
+		return Betslip{}, err
+	}
+
+	betType, err := parseBetType(query)
+	if err != nil {
+		return Betslip{}, err
+	}
+	multiplier := buildBetMultiplier(betType)
+	if multiplier < 1 {
+		return Betslip{}, fmt.Errorf("multiplier set to 0")
+	}
+	stake, err := parseStake(query)
 	if err != nil {
 		return Betslip{}, err
 	}
@@ -34,9 +45,9 @@ func BuildBetSlip(userChan chan Betslip, r *http.Request) (Betslip, error) {
 		userCh:        userChan,
 		betNums:       numbers,
 		betType:       betType,
-		winMultiplier: multiplier,
-		stake:         stake,
-		win:           false,
+		WinMultiplier: multiplier,
+		Stake:         stake,
+		Win:           false,
 	}
 	return newBetSlip, nil
 }
@@ -44,7 +55,7 @@ func BuildBetSlip(userChan chan Betslip, r *http.Request) (Betslip, error) {
 func buildBetNumbers(values url.Values) (map[int]struct{}, error) {
 	numMap := make(map[int]struct{}, 0)
 
-	numbers, present := values["numbers"]
+	numbers, present := values["n"]
 
 	if !present {
 		return numMap, fmt.Errorf("bet number selection not present")
@@ -52,7 +63,7 @@ func buildBetNumbers(values url.Values) (map[int]struct{}, error) {
 
 	for _, v := range numbers {
 		numInt, err := strconv.Atoi(v)
-		if err != nil {
+		if err != nil || numInt > 36 {
 			return numMap, fmt.Errorf("error parsing bet selection numbers")
 		}
 		numMap[numInt] = struct{}{}

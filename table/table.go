@@ -15,14 +15,13 @@ var (
 
 const (
 	AddBet = iota
-	ClearTable
+	ClearParticipants
 	NotifyParticipants
-	SpinTheWheel
 )
 
 type TableRequest struct {
-	cmd     int
-	betSlip Betslip
+	Cmd     int
+	BetSlip Betslip
 }
 
 func TableStart() {
@@ -41,39 +40,48 @@ func tableStateWorker(tableReqCh chan TableRequest) {
 	for {
 		select {
 		case <-ticker.C:
-			tableReqCh <- TableRequest{
-				cmd: SpinTheWheel,
-			}
+			go spinTheWheel()
 		case req := <-tableReqCh:
-			switch req.cmd {
+			switch req.Cmd {
 			case AddBet:
-				participants = append(participants, req.betSlip)
-			case SpinTheWheel:
-				randomSeed := rand.New(seed)
-				winningNumber = randomSeed.Intn(37)
-				fmt.Printf("winning number is %d\n", winningNumber)
-
-				TableRequestChannel <- TableRequest{
-					cmd: NotifyParticipants,
-				}
+				fmt.Printf("bet received for %k\n", req.BetSlip.betNums)
+				participants = append(participants, req.BetSlip)
 			case NotifyParticipants:
+
 				for _, participant := range participants {
 					_, winCheck := participant.betNums[winningNumber]
 
 					if winCheck {
-						participant.win = true
+						participant.Win = true
 						participant.userCh <- participant
 					} else {
+						fmt.Println("got here")
 						participant.userCh <- participant
 					}
 				}
-				TableRequestChannel <- TableRequest{
-					cmd: ClearTable,
-				}
+				go clearParticiants()
+
 				ticker.Reset(1 * time.Minute)
-			case ClearTable:
+			case ClearParticipants:
 				participants = make([]Betslip, 0)
 			}
 		}
+	}
+}
+
+func spinTheWheel() {
+
+	randomSeed := rand.New(seed)
+	winningNumber = randomSeed.Intn(37)
+	fmt.Printf("winning number is %d\n", winningNumber)
+	TableRequestChannel <- TableRequest{
+		Cmd: NotifyParticipants,
+	}
+	return
+}
+
+func clearParticiants() {
+	TableRequestChannel <- TableRequest{
+		Cmd: ClearParticipants,
 	}
 }
