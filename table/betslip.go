@@ -63,7 +63,7 @@ func buildBetNumbers(values url.Values) (map[int]struct{}, error) {
 
 	for _, v := range numbers {
 		numInt, err := strconv.Atoi(v)
-		if err != nil || numInt > 36 {
+		if err != nil || numInt > 36 || numInt < 0 {
 			return numMap, fmt.Errorf("error parsing bet selection numbers")
 		}
 		numMap[numInt] = struct{}{}
