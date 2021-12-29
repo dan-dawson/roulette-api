@@ -2,11 +2,12 @@ package api
 
 import (
 	"fmt"
+	"github.com/Harshmist/roulette-api/table"
 	"net/http"
 	"strings"
-	"table"
 )
 
+// RequestRouter will allow paths to be wildcards meaning new functionality will not require coding a new handler each time.
 func RequestRouter(w http.ResponseWriter, r *http.Request) {
 	route := parseRoute(r)
 
@@ -18,6 +19,8 @@ func RequestRouter(w http.ResponseWriter, r *http.Request) {
 			// simulate logging
 			fmt.Println(err)
 			w.WriteHeader(http.StatusBadRequest)
+
+			return
 		}
 
 	}

@@ -5,18 +5,20 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 )
 
-type betslip struct {
-	userCh        chan betslip
-	betNums       []int
+type Betslip struct {
+	betID         int64
+	userCh        chan Betslip
+	betNums       map[int]struct{}
 	betType       string
 	winMultiplier int
 	stake         int
 	win           bool
 }
 
-func BuildBetSlip(r *http.Request) (betslip, error) {
+func BuildBetSlip(userChan chan Betslip, r *http.Request) (Betslip, error) {
 	query := r.URL.Query()
 	numbers, err := buildBetNumbers(query)
 	betType, err := parseBetType(query)
@@ -24,10 +26,12 @@ func BuildBetSlip(r *http.Request) (betslip, error) {
 	stake, err := parseStake(query)
 
 	if err != nil {
-		return betslip{}, err
+		return Betslip{}, err
 	}
 
-	newBetSlip := betslip{
+	newBetSlip := Betslip{
+		betID:         time.Now().UnixNano(),
+		userCh:        userChan,
 		betNums:       numbers,
 		betType:       betType,
 		winMultiplier: multiplier,
@@ -37,23 +41,23 @@ func BuildBetSlip(r *http.Request) (betslip, error) {
 	return newBetSlip, nil
 }
 
-func buildBetNumbers(values url.Values) ([]int, error) {
-	numSlice := make([]int, 0)
+func buildBetNumbers(values url.Values) (map[int]struct{}, error) {
+	numMap := make(map[int]struct{}, 0)
 
 	numbers, present := values["numbers"]
 
 	if !present {
-		return numSlice, fmt.Errorf("bet number selection not present")
+		return numMap, fmt.Errorf("bet number selection not present")
 	}
 
 	for _, v := range numbers {
 		numInt, err := strconv.Atoi(v)
 		if err != nil {
-			return numSlice, fmt.Errorf("error parsing bet selection numbers")
+			return numMap, fmt.Errorf("error parsing bet selection numbers")
 		}
-		numSlice = append(numSlice, numInt)
+		numMap[numInt] = struct{}{}
 	}
-	return numSlice, nil
+	return numMap, nil
 }
 
 func parseBetType(values url.Values) (string, error) {
