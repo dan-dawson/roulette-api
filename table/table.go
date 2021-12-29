@@ -8,7 +8,7 @@ import (
 
 var (
 	participants        []Betslip
-	tableRequestChannel chan TableRequest
+	TableRequestChannel chan TableRequest
 	seed                rand.Source
 	winningNumber       int
 )
@@ -27,10 +27,10 @@ type TableRequest struct {
 
 func TableStart() {
 	participants = make([]Betslip, 0)
-	tableRequestChannel = make(chan TableRequest)
+	TableRequestChannel = make(chan TableRequest)
 	seed = rand.NewSource(time.Now().UnixNano())
 
-	tableStateWorker(tableRequestChannel)
+	tableStateWorker(TableRequestChannel)
 }
 
 func tableStateWorker(tableReqCh chan TableRequest) {
@@ -53,7 +53,7 @@ func tableStateWorker(tableReqCh chan TableRequest) {
 				winningNumber = randomSeed.Intn(37)
 				fmt.Printf("winning number is %d\n", winningNumber)
 
-				tableRequestChannel <- TableRequest{
+				TableRequestChannel <- TableRequest{
 					cmd: NotifyParticipants,
 				}
 			case NotifyParticipants:
@@ -67,7 +67,7 @@ func tableStateWorker(tableReqCh chan TableRequest) {
 						participant.userCh <- participant
 					}
 				}
-				tableRequestChannel <- TableRequest{
+				TableRequestChannel <- TableRequest{
 					cmd: ClearTable,
 				}
 				ticker.Reset(1 * time.Minute)
