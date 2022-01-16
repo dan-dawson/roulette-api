@@ -2,12 +2,14 @@ package api
 
 import (
 	"fmt"
-	"github.com/Harshmist/roulette-api/table"
 	"net/http"
 	"strings"
+
+	"github.com/Harshmist/roulette-api/table"
 )
 
 // RequestRouter will allow paths to be wildcards meaning new functionality will not require coding a new handler each time.
+// Other functionality could include; cash out, bet history, check balance etc.
 func RequestRouter(w http.ResponseWriter, r *http.Request) {
 	route := parseRoute(r)
 	userResponse := make(chan table.Betslip)

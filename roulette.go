@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/Harshmist/roulette-api/api"
 	"github.com/Harshmist/roulette-api/table"
-	"net/http"
 )
 
 func main() {

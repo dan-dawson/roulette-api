@@ -45,7 +45,7 @@ func tableStateWorker(tableReqCh chan TableRequest) {
 		case req := <-tableReqCh:
 			switch req.Cmd {
 			case AddBet:
-				fmt.Printf("bet received for %v\n", req.BetSlip.betNums)
+				fmt.Printf("Bet ID - %d. Bet received for numbers %s\n", req.BetSlip.betID, betNumbersString(req.BetSlip.betNums))
 				participants = append(participants, req.BetSlip)
 			case NotifyParticipants:
 
@@ -61,9 +61,10 @@ func tableStateWorker(tableReqCh chan TableRequest) {
 				}
 				go clearParticipants()
 
-				ticker.Reset(1 * time.Minute)
 			case ClearParticipants:
 				participants = make([]Betslip, 0)
+				fmt.Println("New game will spin in 1 minute!")
+				ticker.Reset(1 * time.Minute)
 			}
 		}
 	}
@@ -86,4 +87,14 @@ func clearParticipants() {
 	TableRequestChannel <- TableRequest{
 		Cmd: ClearParticipants,
 	}
+}
+
+func betNumbersString(numbers map[int]struct{}) string {
+	numberString := ""
+
+	for key := range numbers {
+		numberString = numberString + fmt.Sprintf("[%d] ", key)
+	}
+
+	return numberString
 }

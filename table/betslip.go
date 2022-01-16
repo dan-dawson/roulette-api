@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 )
 
 type Betslip struct {
+	betID         int64
 	userCh        chan Betslip
 	betNums       map[int]struct{}
 	betType       string
@@ -30,16 +32,20 @@ func BuildBetSlip(userChan chan Betslip, r *http.Request) (Betslip, error) {
 	if err != nil {
 		return Betslip{}, err
 	}
+
 	multiplier := setBetMultiplier(betType)
 	if multiplier < 1 {
 		return Betslip{}, fmt.Errorf("multiplier set to 0")
 	}
+
 	stake, err := parseStake(query)
+
 	if err != nil {
 		return Betslip{}, err
 	}
 
 	newBetSlip := Betslip{
+		betID:         time.Now().UnixNano(),
 		userCh:        userChan,
 		betNums:       numbers,
 		betType:       betType,
@@ -47,6 +53,7 @@ func BuildBetSlip(userChan chan Betslip, r *http.Request) (Betslip, error) {
 		Stake:         stake,
 		Win:           false,
 	}
+
 	return newBetSlip, nil
 }
 
@@ -73,7 +80,7 @@ func parseBetType(values url.Values) (string, error) {
 	betType, present := values["type"]
 
 	if !present || len(betType) > 1 {
-		return "", fmt.Errorf("no bet type found")
+		return "", fmt.Errorf("incorrect bet type")
 	}
 
 	return betType[0], nil
