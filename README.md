@@ -73,3 +73,9 @@ A straight bet has 35:1 odds meaning the profit from a win would be £3500.
 
 Please note:
 This programme currently only supports single bets per request.
+
+# Future improvements 
+
+Use of json in requests made to api. Ran short on time in this iteration
+
+Ability to place multiple bets at once either through batching or structured json
